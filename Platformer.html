@@ -1,0 +1,229 @@
+<html>
+<body>
+<canvas></canvas>
+<p id="AI">[</p>
+<style>
+body {
+	margin : 0px;
+}
+</style>
+<script>
+window.onload = function(){
+	canvas = document.getElementsByTagName("canvas")[0];
+	canvas.width = innerWidth;
+	canvas.height = innerHeight;
+	c = canvas.getContext("2d");
+	x = 400;
+	y = 400;
+	xvel = 0;
+	yvel = 0;
+	idle_right = new Image();
+	idle_right.src = "Idle Right.png";
+	idle_left = new Image();
+	idle_left.src = "Idle Left.png";
+
+	walk_frame_1_right = new Image();
+	walk_frame_1_right.src = "Walk Frame 1 Right.png";
+	walk_frame_2_right = new Image();
+	walk_frame_2_right.src = "Walk Frame 2 Right.png";
+
+	walk_frame_1_left = new Image();
+	walk_frame_1_left.src = "Walk Frame 1 Left.png";
+	walk_frame_2_left = new Image();
+	walk_frame_2_left.src = "Walk Frame 2 Left.png";
+
+	character = idle_right;
+	direction = "right";
+	gravity = 0.2;
+	keys = {}
+	pressed = false;
+    window.addEventListener("keypress",function(e){
+	    pressed = true
+		keys[e.key] = true;
+	})
+	window.addEventListener("keyup",function(e){
+		keys[e.key] = false;
+		pressed = false;
+	})
+	window.addEventListener("mousedown",function(e){
+		if (prevE[0] != e.clientX && prevE[1] != e.clientY){
+			blocks.push(["Door Closed.png",e.clientX,e.clientY])
+			document.getElementById("AI").innerHTML += "['" + blocks[blocks.length-1][0] + "'," + blocks[blocks.length-1][1] +"," + blocks[blocks.length-1][2] + "],";
+			prevE[0] = e.clientX;
+			prevE[1] = e.clientY;
+		}
+	})
+	frame = 0;
+	switching = true;
+	jumped = true;
+	prevx = 0;
+	prevy = 0;
+	dimensions = 50;
+	key = false;
+	prevE = [0,0];
+	blocks = [['Key.png',210,532],['Grass Block.png',321,455],['Grass Block.png',479,436],['Grass Block.png',598,404],['Grass Block.png',772,471],['Grass Block.png',1045,321]];
+	level = 1;
+	function game(){
+		c.fillStyle = "rgb(153,217,234)";
+		c.fillRect(0,0,innerWidth,innerHeight);
+		c.drawImage(character,x,y);
+		prevy = y;
+		y += yvel;
+
+		frame += 1
+		for (i in blocks){
+		    d = new Image();
+			d.src = blocks[i][0];
+			
+			c.drawImage(d,blocks[i][1],blocks[i][2]);
+		}
+		if (keys["d"]){
+			prevx = x;
+			prevy = y;
+			x += 3;
+			for (i in blocks){
+		    if (blocks[i][0] == "Grass Block.png"){		
+			if ((x+40) > blocks[i][1] && x < blocks[i][1]+50 && (y >= blocks[i][2] && y <= blocks[i][2]+50 || y+50 >= blocks[i][2] && y+50 <= blocks[i][2]+50)){
+				x-=3;
+
+			}
+			}
+			if (blocks[i][0] == "Key.png"){
+			if ((x+40) > blocks[i][1] && x < blocks[i][1]+50 && (y >= blocks[i][2] && y <= blocks[i][2]+26 || y+50 >= blocks[i][2] && y+50 <= blocks[i][2]+26)){
+				key = true;
+				delete(blocks[i])
+				
+			}
+			}
+			}
+			direction = "right";
+		}
+		if (keys["a"]){
+			prevx = x;
+			prevy = y;
+			x -= 3;
+			for (i in blocks){
+		    		
+			if (blocks[i][0] == "Grass Block.png"){		
+			if ((x+40) > blocks[i][1] && x < blocks[i][1]+50 && (y >= blocks[i][2] && y <= blocks[i][2]+50 || y+50 >= blocks[i][2] && y+50 <= blocks[i][2]+50)){
+				x+=3;
+			}
+			}
+			if (blocks[i][0] == "Key.png"){
+			if ((x+40) > blocks[i][1] && x < blocks[i][1]+50 && (y >= blocks[i][2] && y <= blocks[i][2]+26 || y+50 >= blocks[i][2] && y+50 <= blocks[i][2]+26)){
+				key = true;
+				delete(blocks[i])
+				
+			}
+			}
+			}
+			direction = "left";
+		}
+		if (keys[" "] && jumped == false){
+			yvel = -9;
+			jumped = true;
+		}
+		if (keys["w"] && jumped == false){
+			yvel = -9;
+			jumped = true;
+		}
+		if (frame%10 == 0 && keys["d"]){
+		    if (switching == false){
+		    switching = true
+			character = walk_frame_2_right;
+			}
+			else {
+			switching = false
+			character = walk_frame_1_right;
+			}
+		}
+		if (frame%10 == 0 && keys["a"]){
+		    if (switching == false){
+		    switching = true
+			character = walk_frame_2_left;
+			}
+			else {
+			switching = false
+			character = walk_frame_1_left;
+			}
+		}
+		if (frame%20 == 0 && !keys["d"] && direction == "right"){
+		    character = idle_right;
+		}
+		if (frame%20 == 0 && !keys["a"] && direction == "left"){
+		    character = idle_left;
+		}
+		for (i in blocks){
+		    		
+			if (!((x+40) > blocks[i][1] && x < blocks[i][1]+50 && (y >= blocks[i][2] && y <= blocks[i][2]+50 || y+50 >= blocks[i][2] && y+50 <= blocks[i][2]+50))){
+				if (canvas.height > y+50){
+				jumped = true;
+				if (direction == "right"){
+					character = walk_frame_1_right;
+				}else{
+				character = walk_frame_1_left;
+				}
+				}
+			}
+			
+		}
+
+		if (jumped == true){
+			yvel += 0.2;
+			for (i in blocks){
+			if (blocks[i][0] == "Grass Block.png"){
+			if ((x+40) > blocks[i][1] && x < blocks[i][1]+50 && (y >= blocks[i][2] && y <= blocks[i][2]+50 || y+50 >= blocks[i][2] && y+50 <= blocks[i][2]+50)){
+		
+				y -= yvel;
+				if (yvel > 0){
+				jumped = false;
+				}
+				if (!keys[" "] || !keys["w"]){
+				yvel = 0;
+				}
+
+
+				
+
+
+			}
+			}
+
+			if (blocks[i][0] == "Key.png"){
+			if ((x+40) > blocks[i][1] && x < blocks[i][1]+50 && (y >= blocks[i][2] && y <= blocks[i][2]+26 || y+50 >= blocks[i][2] && y+50 <= blocks[i][2]+26)){
+				key = true;
+				delete(blocks[i])
+				
+			}
+			}
+
+			if (blocks[i][0] == "Door Open.png"){
+			if ((x+40) > blocks[i][1] && x < blocks[i][1]+39 && (y >= blocks[i][2] && y <= blocks[i][2]+80 || y+50 >= blocks[i][2] && y+50 <= blocks[i][2]+80)){
+				key = true;
+				delete(blocks[i])
+				
+			}
+			}
+			}
+		}
+		if (y+50 > canvas.height){
+			yvel = 0;
+			prevy = y;
+			y = canvas.height-50;
+			jumped = false;
+		}
+		if (key == true){
+			for (i in blocks){
+				if (blocks[i][0] == "Door Closed.png"){
+					blocks[i][0] = "Door Open.png"
+				}
+			}
+		}
+
+
+	}
+	setInterval(game,10);
+}
+</script>
+</body>
+</html>
